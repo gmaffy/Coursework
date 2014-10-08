@@ -190,12 +190,12 @@ def find_neighbors(kmer, hamming_dist, letters = 'AGCT'):
     """Helper generator to find all kmers within hamming_dist of the starting
     kmer."""
     for indices in itertools.combinations(range(len(kmer)), hamming_dist):
-        this_kmer = [[char] for char in kmer]
+        this_kmer = [[char] for char in kmer] #store current kmer as list of lists of single letters
         for index in indices:
             orig_char = kmer[index]
             #this_kmer[index] = [l for l in letters if l != orig_char] #uncomment this if you want to coerce there into being hamming_dist mutations
-            this_kmer[index] = [l for l in letters]
-        for poss in itertools.product(*this_kmer):
+            this_kmer[index] = [l for l in letters] #replace one letter with a list of all possible replacements
+        for poss in itertools.product(*this_kmer): #* syntax unpacks this_kmer into a list of individual letters and one list of all four possibilities
             yield ''.join(poss)
 
 def frequent_words_with_mismatches_v3(text, k, hamming_dist):
