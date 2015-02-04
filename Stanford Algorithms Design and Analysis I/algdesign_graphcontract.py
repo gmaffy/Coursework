@@ -1,6 +1,5 @@
 """Implementation of the randomized contraction algorithm developed by Karger to find the minimum cut in
 an undirected graph (represented as an adjacency list).
-
 A single run of the algorithm has an n**-2 probability of finding a particular minimum cut solution,
 but if we repeat the algorithm for (n**2)(ln n) trials we have only an n**-1 probability of failure."""
 
