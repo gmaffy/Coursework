@@ -70,7 +70,6 @@ class AdjacencyGraph(object):
 		cleaned_edges = [item for item in new_dict[supernode] if not item == supernode]
 		new_dict[supernode] = cleaned_edges
 
-		#print 'new', new_dict
 		self.adjacency_dict = new_dict
 
 	def choose_random_edge(self):
@@ -108,8 +107,5 @@ def multicontract(N, filename):
 #######################################
 
 
-<<<<<<< HEAD
-#print multicontract(1000, F)
-=======
 print multicontract(1000, F)
->>>>>>> origin/master
+
