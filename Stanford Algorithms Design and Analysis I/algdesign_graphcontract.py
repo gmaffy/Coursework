@@ -33,6 +33,9 @@ class AdjacencyGraph(object):
 	def __init__(self, adjacency_dictionary):
 		self.adjacency_dict = adjacency_dictionary
 
+	def get(self, node):
+		return self.adjacency_dict[node]
+
 	def count_nodes(self):
 		return len(self.adjacency_dict.keys())
 
@@ -107,5 +110,5 @@ def multicontract(N, filename):
 #######################################
 
 
-print multicontract(1000, F)
+#print multicontract(1000, F)
 
