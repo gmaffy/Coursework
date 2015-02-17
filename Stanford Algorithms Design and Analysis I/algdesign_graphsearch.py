@@ -27,6 +27,19 @@ class Queue(object):
 		else:
 			print "Queue is empty"
 
+def directed_graph_read(filename):
+	graph_dict = {}
+	with open(filename, 'r') as fo:
+		for line in fo:
+			i = line.split()
+			graph_dict[int(i[0])] = graph_dict.get(int(i[0]),[]) + [int(i[1])]
+	for key in graph_dict.keys(): #make sure that even nodes with no outgoing edges are still represented
+		print key
+		for item in graph_dict[key]:
+			if not item in graph_dict.keys():
+				graph_dict[item] = []
+	return gc.AdjacencyGraph(graph_dict)
+
 ###################################################
 
 
@@ -129,26 +142,85 @@ def dfs_topological(graph):
 
 t, s = 0, None
 
-def dfs_loop(graph):
+def dfs_loop_firstpass(graph):
 	global t
-	global s
-	
+	t = 0
+	finishing_times = [0 for dummy in range(graph.count_nodes())]
+	searched = [False for dummy in range(graph.count_nodes())]
+	for node_rank in range(graph.count_nodes(), 0, -1):
+
+		if not searched[node_rank-1]:
+			dfs_kosaraju_rev(graph, node_rank, searched, finishing_times)
+
+	return finishing_times	
+
+def dfs_loop_secondpass(graph, ordering):
+	leaders = [None for dummy in range(graph.count_nodes())]
+	searched = [False for dummy in range(graph.count_nodes())]
+	#iterate through nodes in reverse order of finishing time
+	for fin_time in range(graph.count_nodes(), 0, -1):
+		node = ordering.index(fin_time) + 1
+		if not searched[node-1]:
+			leader = node
+			dfs_kosaraju_fwd(graph, node, searched, leaders, leader)
+	return leaders
 
 
-def dfs_kosaraju_rev(graph, node, searched = [], leader = []):
-	if not searched:
-		searched = [False for dummy in range(graph.count_nodes())]
-	leader[node-1] = node
-	pass
+def dfs_kosaraju_rev(graph, node, searched, finishing_times):
+	global t
+	assert len(searched) == graph.count_nodes() #searched should always be passed in from the enclosing namespace
+	searched[node-1] = True
+	for outgoing_edge in graph.reverse_get(node):
+		if not searched[outgoing_edge-1]:
+			dfs_kosaraju_rev(graph, outgoing_edge, searched, finishing_times)
+			
+	t+=1
+	finishing_times[node-1] = t
+
+def dfs_kosaraju_fwd(graph, node, searched, leaders, leader):
+	searched[node-1] = True
+	leaders[node-1] = leader
+	for outgoing_edge in graph.get(node):
+		if not searched[outgoing_edge-1]:
+			dfs_kosaraju_fwd(graph, outgoing_edge, searched, leaders, leader)
+
+
+def kosaraju_twopass(graph):
+	"""Compute the sizes of strongly connected components in a directed graph, in descending order"""
+	magical_ordering = dfs_loop_firstpass(graph)
+	leader_list = sorted(dfs_loop_secondpass(graph, magical_ordering))
+	current_size = 1
+	previous = leader_list.pop()
+	cc_sizes = []
+	while leader_list:
+		current = leader_list.pop()
+		if current == previous:
+			current_size += 1
+		else:
+			cc_sizes.append(current_size)
+			current_size = 1
+		previous = current
+	cc_sizes.append(current_size)
+	return sorted(cc_sizes)
 
 
 ###################################################
 
-test_graph = gc.AdjacencyGraph({1: [2,3], 2: {4, 5}, 3: [6, 7], 4: [], 5: [], 6: [], 7 : [], 8: [9], 9: [8], 10: [], 11: [12], 12: [11, 13], 13: [12]})
-print bfs(test_graph, 1)
-print dfs(test_graph, 1)
-print bfs_shortestpath(test_graph, 1)
-print find_undirected_CCs(test_graph)
+# test_graph = gc.AdjacencyGraph({1: [2,3], 2: {4, 5}, 3: [6, 7], 4: [], 5: [], 6: [], 7 : [], 8: [9], 9: [8], 10: [], 11: [12], 12: [11, 13], 13: [12]})
+# print bfs(test_graph, 1)
+# print dfs(test_graph, 1)
+# print bfs_shortestpath(test_graph, 1)
+# print find_undirected_CCs(test_graph)
 
-test_dag = gc.AdjacencyGraph({1: [3], 2: [5], 3: [2], 4: [], 5: [4]})
-print dfs_topological(test_dag)
+# test_dag = gc.AdjacencyGraph({1: [3], 2: [5], 3: [2], 4: [], 5: [4]})
+# print dfs_topological(test_dag)
+
+test_kosaraju = gc.AdjacencyGraph({1: [4], 2: [8], 3: [6], 4: [7], 5: [2], 6: [9], 7: [1], 8: [5,6], 9: [3,7]})
+print kosaraju_twopass(test_kosaraju)
+
+
+k_graph = directed_graph_read("SCC.txt")
+for node in range(1,10):
+	print k_graph.get(node)
+
+print kosaraju_twopass(k_graph)

@@ -36,6 +36,15 @@ class AdjacencyGraph(object):
 	def get(self, node):
 		return self.adjacency_dict[node]
 
+	def reverse_get(self, node):
+		"""Return any nodes that have directed edges into the target node.
+		Useful for finding strongly connected components."""
+		reverse_nodes = []
+		for key in self.adjacency_dict.keys():
+			if node in self.adjacency_dict[key]:
+				reverse_nodes.append(key)
+		return reverse_nodes
+
 	def count_nodes(self):
 		return len(self.adjacency_dict.keys())
 
