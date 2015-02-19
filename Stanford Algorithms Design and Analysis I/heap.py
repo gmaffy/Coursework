@@ -77,7 +77,7 @@ class MinHeap(object):
 
 
 class MaxHeap(object):
-
+	"""Maximum heap data structure. Identical to MinHeap except for direction of inequalities in extract_max and check_heap_property."""
 	def __init__(self):
 		self.array = []
 		self.root = None
