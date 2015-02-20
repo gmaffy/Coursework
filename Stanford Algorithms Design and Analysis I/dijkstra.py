@@ -3,6 +3,10 @@ between a source vertex and all other vertices in a graph. Each edge has an asso
 non-negative weight or cost."""
 
 
+##############################################
+############## DATA STRUCTURES ###############
+##############################################
+
 class DijkstraMinHeap(object):
 	"""Heap data structure to hold information relevant to Dijkstra's shortest path algorithm.
 	Object stored in heap are two-element pairs of (node, distance from source)."""
@@ -79,6 +83,10 @@ class DijkstraMinHeap(object):
 		self.array = sorted(l)
 
 
+##############################################
+####### WEIGHTED GRAPH REPRESENTATION ########
+##############################################
+
 class WeightedGraph(object):
 	"""Input dictionary keyed with nodes of graph. Values are themselves dictionaries keyed with the
 	target node of that node's edges, with values as the weight of that edge."""
@@ -109,7 +117,10 @@ def text_to_weightedgraph(filename):
 
 	return WeightedGraph(graph_dict)
 
-wg = text_to_weightedgraph('dijkstraData.txt')
+
+##############################################
+################## DIJKSTRA ##################
+##############################################
 
 def dijkstra(graph, source, arbitrary_maximum = 1000000):
 	"""Straightforward O(mn) implementation of Dijkstra's shortest-path algorithm.
@@ -140,7 +151,8 @@ def dijkstra(graph, source, arbitrary_maximum = 1000000):
 
 	return dist_dict
 
-def dijkstra_heap(graph, source, arbitrary_maxium = 1000000):
+
+def dijkstra_heap(graph, source, arbitrary_maximum = 1000000):
 	"""Heap-based implementation of Dijkstra's shortest path algorithm.
 	O(m+nlogn) time due to fast extract_min enabled by heap."""
 	dist_dict = {source : 0}
@@ -152,7 +164,7 @@ def dijkstra_heap(graph, source, arbitrary_maxium = 1000000):
 	priority_queue.insert([source, dist_dict[source]]) #place source node as root of min heap
 
 	while priority_queue.array:
-		current = priority_queue.extract_min()
+		current = priority_queue.extract_min()[0]
 
 		for neighbor in graph.get_neighbors(current):
 
@@ -166,6 +178,11 @@ def dijkstra_heap(graph, source, arbitrary_maxium = 1000000):
 	return dist_dict
 
 
+##############################################
+#################### MAIN ####################
+##############################################
 
-print dijkstra(wg, 1)
-print dijkstra(wg, 1)
+if __name == __main__:
+	wg = text_to_weightedgraph('dijkstraData.txt')
+	print dijkstra(wg, 1)
+	print dijkstra_heap(wg, 1)
