@@ -1,4 +1,4 @@
 Coursework
 ==========
 
-Python and R code for coursera classes
+Code for Coursera, Codecademy, and other online classes.
