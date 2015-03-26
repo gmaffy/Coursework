@@ -6,7 +6,7 @@ Prim's minimum spanning tree Algorithm
 """
 
 #PROBLEM 1
-#GREEDY ALGORITHM FOR MINIMIZING WEIGHTED SUM OF COMPLETION TIMES OF TASKS
+#SUBOPTIMAL GREEDY ALGORITHM FOR MINIMIZING WEIGHTED SUM OF COMPLETION TIMES OF TASKS
 
 class Job(object):
 
@@ -132,6 +132,45 @@ def prob2_scheduler(priority_dict):
 		del priority_dict[current_bin]
 
 	return running_sum
+
+#PROBLEM 3
+#PRIM'S ALGORITHM FOR COMPUTING A MINIMUM SPANNING TREE OF AN UNDIRECTED GRAPH
+
+class Graph(object):
+	"""Undirected graph data structure."""
+	def __init__(self):
+		self.nodes = set([])
+		self.edges = []
+		self.edges_by_outnode = {}
+		self.best_incoming_edge = {} #store the lowest-cost edge incident to each node
+
+	def add_edge(self, edge):
+		"""Edge should be a 3-tuple of (start node, end node, cost)."""
+		in_node, out_node, cost = edge
+		self.nodes.add(in_node)
+		self.nodes.add(out_node)
+		self.edges.append(edge)
+
+		if out_node in self.edges_by_outnode.keys():
+			self.edges_by_outnode[out_node].append(edge)
+		else:
+			self.edges_by_outnode[out_node] = [edge,]
+
+		if out_node in self.best_incoming_edge.keys():
+			if cost < self.best_incoming_edge[out_node]:
+				self.best_incoming_edge[out_node] = cost
+		else:
+			self.best_incoming_edge[out_node] = cost
+
+def prob3_reader(filename):
+	"""Convert a file with the format:
+	[number_of_nodes] [number_of_edges]
+	[one_node_of_edge_1] [other_node_of_edge_1] [edge_1_cost]
+	[one_node_of_edge_2] [other_node_of_edge_2] [edge_2_cost]
+	...
+
+	to an undirected graph useable in Prim's Algorithm."""
+	pass
 
 
 if __name__ == "__main__":
