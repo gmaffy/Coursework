@@ -8,14 +8,14 @@ jobs_test_3 = alg.prob1_reader('jobs_test_3.txt')
 
 class SchedulingTest(unittest.TestCase):
 	def test_set_1(self):
-		self.assertEqual(alg.prob1(jobs_test_1),31814)
-		self.assertEqual(alg.prob2(jobs_test_1),31814)
+		self.assertEqual(alg.prob1_scheduler(alg.prob1_prioritydict(jobs_test_1)),31814)
+		self.assertEqual(alg.prob2_scheduler(alg.prob2_prioritydict(jobs_test_1)),31814)
 	def test_set_2(self):
-		self.assertEqual(alg.prob1(jobs_test_2),61545)
-		self.assertEqual(alg.prob2(jobs_test_2),60213)
+		self.assertEqual(alg.prob1_scheduler(alg.prob1_prioritydict(jobs_test_2)),61545)
+		self.assertEqual(alg.prob2_scheduler(alg.prob2_prioritydict(jobs_test_2)),60213)
 	def test_set_3(self):
-		self.assertEqual(alg.prob1(jobs_test_3),688647)
-		self.assertEqual(alg.prob2(jobs_test_3),674634)
+		self.assertEqual(alg.prob1_scheduler(alg.prob1_prioritydict(jobs_test_3)),688647)
+		self.assertEqual(alg.prob2_scheduler(alg.prob2_prioritydict(jobs_test_3)),674634)
 
 #PROBLEM 3: PRIM'S MINIMUM SPANNING TREE ALGORITHMj
 

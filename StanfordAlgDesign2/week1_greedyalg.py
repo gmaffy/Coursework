@@ -31,34 +31,35 @@ def prob1_reader(filename):
 
 def prob1_prioritydict(job_array):
 	"""Given an array of Job objects, load them into a hash table keyed by the
-	product of the length and weight of each job. If multiple jobs have the same 
-	product, arrange them in increasing order of weight."""
+	difference of the weight and length of each job. If multiple jobs have the same 
+	difference, arrange them in increasing order of weight."""
 	priority_dict = {}
 
 	for job in job_array:
-		product = job.weight * job.length
+		difference = job.weight - job.length
 
-		if product in priority_dict.keys():
-			counter = len(priority_dict[product])
-			for idx in range(len(priority_dict[product])): #insert new job in increasing order of weight
-				if job.weight < priority_dict[product][idx].weight:
-					counter = idx
-					break
+		if difference in priority_dict.keys():
+			counter = 0
+			for idx in range(len(priority_dict[difference])): #insert new job in increasing order of weight
+				if job.weight > priority_dict[difference][idx].weight:
+					counter = idx + 1
+					#print job.weight, counter, priority_dict[difference][idx].weight
+					#break
 			#print job.weight, counter
-			priority_dict[product].insert(counter, job)
+			priority_dict[difference].insert(counter, job)
 				
 		else:
-			priority_dict[product] = [job,]
+			priority_dict[difference] = [job,]
 
 	return priority_dict
 
 def prob1_scheduler(priority_dict):
-	"""Input a hash table of {product: (weight, length),...}
-	where within a given bin, jobs with equivalent product are sorted
+	"""Input a hash table of {difference: (weight, length),...}
+	where within a given bin, jobs with equivalent difference are sorted
 	in increasing order of weight.
 
-	Schedule jobs in decreasing order of weight * length, breaking ties
-	by scheduling higher-weight jobs first. Not guaranteed to be correct.
+	Schedule jobs in decreasing order of difference, breaking ties
+	by scheduling higher-weight jobs first. Not guaranteed to be optimal.
 	Return sum of weighted completion times of the resulting schedule."""
 	completion_time = 0
 	running_sum = 0
@@ -84,23 +85,22 @@ def prob1_scheduler(priority_dict):
 
 def prob2_prioritydict(job_array):
 	"""Given an array of Job objects, load them into a hash table keyed by the
-	ratio of the weight to length of each job. If multiple jobs have the same 
-	product, arrange them in increasing order of weight."""
+	ratio of the weight and length of each job. If multiple jobs have the same 
+	ratio, arrange them in increasing order of weight."""
 	priority_dict = {}
 
 	for job in job_array:
-		ratio = job.weight / job.length
+		ratio = job.weight / float(job.length)
 
 		if ratio in priority_dict.keys():
-			counter = len(priority_dict[ratio])
+			counter = 0
 			for idx in range(len(priority_dict[ratio])): #insert new job in increasing order of weight
-				if job.weight < priority_dict[ratio][idx].weight:
-					counter = idx
-					break
+				if job.weight > priority_dict[ratio][idx].weight:
+					counter = idx + 1
+					#print job.weight, counter, priority_dict[ratio][idx].weight
+					#break
 			#print job.weight, counter
 			priority_dict[ratio].insert(counter, job)
-
-			#priority_dict[ratio].append(job)
 				
 		else:
 			priority_dict[ratio] = [job,]
@@ -108,12 +108,12 @@ def prob2_prioritydict(job_array):
 	return priority_dict
 
 def prob2_scheduler(priority_dict):
-	"""Input a hash table of {product: (weight, length),...}
-	where within a given bin, jobs with equivalent product are sorted
+	"""Input a hash table of {ratio: (weight, length),...}
+	where within a given bin, jobs with equivalent ratios are sorted
 	in increasing order of weight.
 
-	Schedule jobs in decreasing order of weight * length, breaking ties
-	by scheduling higher-weight jobs first. Guaranteed to be correct.
+	Schedule jobs in decreasing order of ratio, breaking ties
+	by scheduling higher-weight jobs first. Not guaranteed to be optimal.
 	Return sum of weighted completion times of the resulting schedule."""
 	completion_time = 0
 	running_sum = 0
@@ -133,7 +133,12 @@ def prob2_scheduler(priority_dict):
 
 	return running_sum
 
+
 if __name__ == "__main__":
+
+	# d = prob1_prioritydict([Job(10,5), Job(6,1), Job(25,20), Job(7,2), Job(100,95), Job(5,0)])
+	# for key in d.keys():
+	# 	print key, [i.weight for i in d[key]]
 
 	print "Problem 1: "
 	jobs = prob1_reader('jobs.txt')	
