@@ -17,6 +17,7 @@ class SchedulingTest(unittest.TestCase):
 		self.assertEqual(alg.prob1(jobs_test_3),688647)
 		self.assertEqual(alg.prob2(jobs_test_3),674634)
 
+#PROBLEM 3: PRIM'S MINIMUM SPANNING TREE ALGORITHMj
 
 if __name__ == "__main__":
 	suite1 = unittest.TestLoader().loadTestsFromTestCase(SchedulingTest)
