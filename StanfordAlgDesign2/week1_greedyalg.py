@@ -5,8 +5,11 @@ Greedy Algorithm design paradigm
 Prim's minimum spanning tree Algorithm
 """
 
+import random
+
 #PROBLEM 1
 #SUBOPTIMAL GREEDY ALGORITHM FOR MINIMIZING WEIGHTED SUM OF COMPLETION TIMES OF TASKS
+
 
 class Job(object):
 
@@ -136,31 +139,41 @@ def prob2_scheduler(priority_dict):
 #PROBLEM 3
 #PRIM'S ALGORITHM FOR COMPUTING A MINIMUM SPANNING TREE OF AN UNDIRECTED GRAPH
 
-class Graph(object):
-	"""Undirected graph data structure."""
+class WeightedUndirectedEdge(object):
+	def __init__(self, node1, node2, cost):
+		self.node1 = node1
+		self.node2 = node2
+		self.cost = cost
+
+
+class UndirectedGraph(object):
+
 	def __init__(self):
 		self.nodes = set([])
-		self.edges = []
-		self.edges_by_outnode = {}
-		self.best_incoming_edge = {} #store the lowest-cost edge incident to each node
+		self.hash_by_node = {}
+		self.hash_by_cost = {}
+
+	def __str__(self):
+		return str(self.hash_by_cost)
 
 	def add_edge(self, edge):
-		"""Edge should be a 3-tuple of (start node, end node, cost)."""
-		in_node, out_node, cost = edge
-		self.nodes.add(in_node)
-		self.nodes.add(out_node)
-		self.edges.append(edge)
+		self.nodes.add(edge.node1)
+		self.nodes.add(edge.node2)
 
-		if out_node in self.edges_by_outnode.keys():
-			self.edges_by_outnode[out_node].append(edge)
+		if edge.node1 in self.hash_by_node.keys():
+			self.hash_by_node[edge.node1].append((edge.node2, edge.cost))
 		else:
-			self.edges_by_outnode[out_node] = [edge,]
+			self.hash_by_node[edge.node1] = [(edge.node2, edge.cost),]
 
-		if out_node in self.best_incoming_edge.keys():
-			if cost < self.best_incoming_edge[out_node]:
-				self.best_incoming_edge[out_node] = cost
+		if edge.node2 in self.hash_by_node.keys():
+			self.hash_by_node[edge.node2].append((edge.node1, edge.cost))
 		else:
-			self.best_incoming_edge[out_node] = cost
+			self.hash_by_node[edge.node2] = [(edge.node1, edge.cost),]
+
+		if edge.cost in self.hash_by_cost.keys():
+			self.hash_by_cost[edge.cost].append((edge.node1, edge.node2))
+		else:
+			self.hash_by_cost[edge.cost] = [(edge.node1, edge.node2),]
 
 def prob3_reader(filename):
 	"""Convert a file with the format:
@@ -170,7 +183,46 @@ def prob3_reader(filename):
 	...
 
 	to an undirected graph useable in Prim's Algorithm."""
-	pass
+	graph = UndirectedGraph()
+
+	with open(filename, 'r') as fo:
+		for idx, line in enumerate(fo):
+			if not idx == 0:
+				node1, node2, cost = line.split()
+				node1, node2, cost = int(node1), int(node2), int(cost)
+				current_edge = WeightedUndirectedEdge(node1, node2, cost)
+				graph.add_edge(current_edge)
+
+	return graph
+
+def prims_naive(undir_graph):
+
+	first_node = random.choice(list(graph.nodes))
+	nodes_seen = set([first_node])
+
+	tree = [first_node,]
+	total_cost = 0
+
+	while not nodes_seen == graph.nodes:
+
+		#find cheapest edge with one node in nodes_seen and one not
+		lowest_cost = float("inf")
+		current_node = None
+		for cost in graph.hash_by_cost.keys():
+			for edge in graph.hash_by_cost[cost]:
+				if cost < lowest_cost and (edge[0] in nodes_seen and not edge[1] in nodes_seen):
+					lowest_cost = cost
+					current_node = edge[1]
+				elif cost < lowest_cost and (edge[1] in nodes_seen and not edge[0] in nodes_seen):
+					lowest_cost = cost
+					current_node = edge[0]
+		nodes_seen.add(current_node)
+		total_cost += lowest_cost
+		tree.append(current_node)
+
+	return total_cost
+
+
 
 
 if __name__ == "__main__":
@@ -185,3 +237,7 @@ if __name__ == "__main__":
 
 	print "Problem 2: "
 	print prob2_scheduler(prob2_prioritydict(jobs))
+
+	print "Problem 3: "
+	graph = prob3_reader("prims_edges.txt")
+	print prims_naive(graph)
