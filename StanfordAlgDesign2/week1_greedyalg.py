@@ -196,6 +196,7 @@ def prob3_reader(filename):
 	return graph
 
 def prims_naive(undir_graph):
+	"""O(mn) implementation of Prim's minimum spanning tree algorithm."""
 
 	first_node = random.choice(list(graph.nodes))
 	nodes_seen = set([first_node])
