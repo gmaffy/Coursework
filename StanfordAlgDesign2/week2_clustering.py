@@ -1,3 +1,4 @@
+import itertools
 
 class Node(object):
 
@@ -74,30 +75,121 @@ def hashify(edge_list):
 			edge_dict[edge.cost] = [(edge.node1, edge.node2),]
 	return edge_dict
 
-def greedy_k_clustering(k, edge_dict, node_count):
+def greedy_k_clustering(k, edge_dict, node_count, union_find):
 
 	#load all nodes into union find
-	union_find = UnionFind()
 	for i in range(node_count):
 		union_find.add_node(Node())
 	
-	while union_find.cc_count > k:
+	while union_find.cc_count > k-1:
 
 		#find the lowest-cost edge
 		cheapest_cost = min(edge_dict.keys())
+		#print cheapest_cost
 
 		#choose an edge from the cheapest bin
-		node1, node2 = edge_dict[cheapest_cost].pop()
+		node1, node2 = edge_dict[cheapest_cost].pop(0)
 		if len(edge_dict[cheapest_cost]) == 0: #if this bin is now empty, delete it
 			del edge_dict[cheapest_cost]
-
+		
 		#check to make sure nodes are not in same CC
 		if not union_find.array[node1-1].leader == union_find.array[node2-1].leader:
-			union_find.union(node1-1, node2-1)
+			if union_find.cc_count == k: #determine maximum distance: by definition, maximum distance is the next edge we would have added
+				return cheapest_cost
+			else:
+				union_find.union(node1-1, node2-1)
 
-edge_dict = hashify(problem1_reader("clustering1.txt"))
-print len(edge_dict)
-print min(edge_dict.keys())
+
+	
+
+# edge_dict = hashify(problem1_reader("clustering1.txt"))
+# union_find = UnionFind()
+
+# print greedy_k_clustering(4,edge_dict,500, union_find), "max distance"
+
+###################################################
+#################### PROBLEM 2 ####################
+###################################################
+
+#need to generate all binary strings with 1 or 2 bits of length 24
+def kbits(n, k):
+	"""Generate the n choose k binary strings of length n with
+	k ones and n-k zeroes."""
+	result = []
+	for bits in itertools.combinations(range(n), k):
+		s = ['0'] * n
+		for bit in bits:
+			s[bit] = '1'
+		result.append(''.join(s))
+	return result
+
+#read in problem 2 nodes
+node_list = []
+with open("clustering_big.txt") as fo:
+	for idx, line in enumerate(fo):
+		if not idx == 0:
+			node_list.append(''.join(line.split()))
+
+node_set = set(node_list) #sets have amortized lookup O(1) vs. O(n) for lists
+
+print "node set read"
+
+#need to map actual nodes to node indicies
+node_to_id = {}
+for idx, item in enumerate(node_set):
+	node_to_id[item] = idx
+
+binary_strings_1 = kbits(24,1)
+binary_strings_2 = kbits(24,2)
+
+edge_dict = {1: [], 2: []}
+
+for idx, node in enumerate(node_set):
+	#print idx, len(edge_dict[1]), len(edge_dict[2])
+
+	#check for hamming distance 1
+	for binary in binary_strings_1:
+		new_string = int(node,2) ^ int(binary,2)
+		new_string = '{0:24b}'.format(new_string)
+		if new_string in node_set:
+			edge_dict[1].append((node, new_string))
+
+		#check for hamming distance 2
+	for binary in binary_strings_2:
+		new_string = int(node,2) ^ int(binary,2)
+		new_string = '{0:24b}'.format(new_string)
+		if new_string in node_set:
+			edge_dict[2].append((node, new_string))
+
+print "edge dict completed"
+
+#determine smallest value of k such that 
+
+	#load all nodes into union find
+for i in range(len(node_set)):
+	union_find.add_node(Node())
+
+while True:
+
+	#find the lowest-cost edge
+	cheapest_cost = min(edge_dict.keys())
+	#print cheapest_cost
+
+	#choose an edge from the cheapest bin
+	node1, node2 = edge_dict[cheapest_cost].pop(0)
+	if len(edge_dict[cheapest_cost]) == 0: #if this bin is now empty, delete it
+		del edge_dict[cheapest_cost]
+	
+	#check to make sure nodes are not in same CC
+	if not union_find.array[node_to_id[node1]].leader == union_find.array[node_to_id[node2]].leader:
+		if not edge_dict: #determine maximum distance: by definition, maximum distance is the next edge we would have added
+			break
+		else:
+			union_find.union(node_to_id[node1], node_to_id[node2])
+
+	print union_find.cc_count
+
+print union_find.cc_count
 
 #################
 ### TEST CODE ###
