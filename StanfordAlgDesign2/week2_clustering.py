@@ -132,12 +132,13 @@ with open("clustering_big.txt") as fo:
 
 node_set = set(node_list) #sets have amortized lookup O(1) vs. O(n) for lists
 
-print "node set read"
+print "node set read: "+str(len(node_set))+"nodes"
 
 #need to map actual nodes to node indicies
 node_to_id = {}
 for idx, item in enumerate(node_set):
 	node_to_id[item] = idx
+print len(node_to_id.keys())
 
 binary_strings_1 = kbits(24,1)
 binary_strings_2 = kbits(24,2)
@@ -188,7 +189,6 @@ while True:
 		else:
 			union_find.union(node_to_id[node1], node_to_id[node2])
 
-	print union_find.cc_count
 
 print union_find.cc_count
 
