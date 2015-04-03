@@ -1,7 +1,41 @@
 """Array implementation of the heap data structure, supporting
 insert and extract-min operations in O(logn) time."""
 
+class MinObjectHeap(MinHeap):
+	"""Min Heap to hold objects. Object must have an attribute 'key' that indicates
+	its size."""
+	def __init__(self):
+		self.array = []
+		self.root = None
+		self.hashmap = {} #map value of node : index within self.array
+
+	def check_heap_property(self, child_index, parent_index):
+		"""Check that the heap invariant is not violated for a pair of indices for child and parent nodes."""
+		if child_index == None or parent_index == None:
+			return True
+		else:
+			return self.array[child_index].key >= self.array[parent_index].key
+
+	def insert(self, heap_node):
+		#heap_node must have attributes key and value
+		self.array.append(heap_node)
+		self.hashmap[heap_node.value] = 
+
+		self.array.append(item) #add item as leftmost leaf
+		child_index = len(self.array) - 1
+		parent_index = self.get_parent(child_index)
+		while not self.check_heap_property(child_index, parent_index): #check whether heap invariant is violated
+			self.swap(child_index, parent_index) #if so, bubble the leaf up toward the root
+			child_index = parent_index
+			parent_index = self.get_parent(child_index)
+
+	#need to be able to change key value of node
+	#easiest way -- delete node, re-insert, and re-establish heap invariant?
+
+
+
 class MinHeap(object):
+	"""Min Heap supporting integers only."""
 
 	def __init__(self):
 		self.array = []
@@ -12,6 +46,9 @@ class MinHeap(object):
 
 	def size(self):
 		return len(self.array)
+
+	def __nonzero__(self):
+		return self.size() > 0
 
 	def insert(self, item):
 		self.array.append(item) #add item as leftmost leaf

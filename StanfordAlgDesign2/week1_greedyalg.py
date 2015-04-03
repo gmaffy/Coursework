@@ -6,6 +6,7 @@ Prim's minimum spanning tree Algorithm
 """
 
 import random
+import heap
 
 #PROBLEM 1
 #SUBOPTIMAL GREEDY ALGORITHM FOR MINIMIZING WEIGHTED SUM OF COMPLETION TIMES OF TASKS
@@ -222,6 +223,37 @@ def prims_naive(undir_graph):
 		tree.append(current_node)
 
 	return total_cost
+
+class Node(object):
+
+	def __init__(self, id, key=float("inf")):
+		self.id = id
+		self.key = key
+
+
+def prims_heap(undir_graph):
+	"""O(mlogn) implementation using heaps."""
+	h = heap.MinObjectHeap()
+
+	#load vertices into the heap with their key values
+	#pick a random vertex to be the root with key value zero; others have key value inf
+	first_node = Node(random.choice(list(undir_graph.nodes)), 0)
+	nodes_seen = set([first_node])
+	h.insert(first_node)
+
+	minimum_spanning_tree = []
+
+	#load other nodes into heap with key value +infinity
+	for node in undir_graph.nodes:
+		if not node == first_node.key:
+			h.insert(Node(node, float('inf')))
+
+	while h:
+		u = h.extract_min().id
+		minimum_spanning_tree.append(u)
+		
+
+
 
 
 
