@@ -166,6 +166,7 @@ print "edge dict completed"
 #determine smallest value of k such that 
 
 	#load all nodes into union find
+union_find = UnionFind()
 for i in range(len(node_set)):
 	union_find.add_node(Node())
 
