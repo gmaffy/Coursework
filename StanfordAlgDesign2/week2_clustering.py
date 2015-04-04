@@ -124,73 +124,88 @@ def kbits(n, k):
 	return result
 
 #read in problem 2 nodes
-node_list = []
-with open("clustering_big.txt") as fo:
-	for idx, line in enumerate(fo):
-		if not idx == 0:
-			node_list.append(''.join(line.split()))
+def problem2_reader(filename):
+	node_list = []
+	with open(filename) as fo:
+		for idx, line in enumerate(fo):
+			if not idx == 0:
+				node_list.append(''.join(line.split()))
+	return node_list
 
-node_set = set(node_list) #sets have amortized lookup O(1) vs. O(n) for lists
+def load_union_find(node_list):
+	node_list = set(node_list)
+	node_to_id = {}
+	for idx, item in enumerate(node_list):
+		node_to_id[item] = idx
 
-print "node set read: "+str(len(node_set))+"nodes"
+	union_find = UnionFind()
+	for i in range(len(node_list)):
+		union_find.add_node(Node())
+
+	return node_to_id, union_find
 
 #need to map actual nodes to node indicies
-node_to_id = {}
-for idx, item in enumerate(node_set):
-	node_to_id[item] = idx
-print len(node_to_id.keys())
+def build_edge_dict(node_list):
 
-binary_strings_1 = kbits(24,1)
-binary_strings_2 = kbits(24,2)
+	bit_length = len(node_list[0])
+	binary_strings_1 = kbits(bit_length,1)
+	binary_strings_2 = kbits(bit_length,2)
 
-edge_dict = {1: [], 2: []}
+	formatting = '{0:'+str(bit_length)+'b}'
 
-for idx, node in enumerate(node_set):
-	#print idx, len(edge_dict[1]), len(edge_dict[2])
+	edge_dict = {1: [], 2: []}
 
-	#check for hamming distance 1
-	for binary in binary_strings_1:
-		new_string = int(node,2) ^ int(binary,2)
-		new_string = '{0:24b}'.format(new_string)
-		if new_string in node_set:
-			edge_dict[1].append((node, new_string))
+	node_set = set(node_list) #sets have amortized lookup O(1) vs. O(n) for lists
 
-		#check for hamming distance 2
-	for binary in binary_strings_2:
-		new_string = int(node,2) ^ int(binary,2)
-		new_string = '{0:24b}'.format(new_string)
-		if new_string in node_set:
-			edge_dict[2].append((node, new_string))
+	for idx, node in enumerate(node_set):
+		#print idx, len(edge_dict[1]), len(edge_dict[2])
 
-print "edge dict completed"
+		#check for hamming distance 1
+		for binary in binary_strings_1:
+			new_string = int(node,2) ^ int(binary,2)
 
-#determine smallest value of k such that 
+			new_string = formatting.format(new_string)
+			if new_string in node_set:
+				edge_dict[1].append((node, new_string))
 
-	#load all nodes into union find
-union_find = UnionFind()
-for i in range(len(node_set)):
-	union_find.add_node(Node())
+			#check for hamming distance 2
+		for binary in binary_strings_2:
+			new_string = int(node,2) ^ int(binary,2)
+			new_string = formatting.format(new_string)
+			if new_string in node_set:
+				edge_dict[2].append((node, new_string))
 
-while True:
-
-	#find the lowest-cost edge
-	cheapest_cost = min(edge_dict.keys())
-	#print cheapest_cost
-
-	#choose an edge from the cheapest bin
-	node1, node2 = edge_dict[cheapest_cost].pop(0)
-	if len(edge_dict[cheapest_cost]) == 0: #if this bin is now empty, delete it
-		del edge_dict[cheapest_cost]
-	
-	#check to make sure nodes are not in same CC
-	if not union_find.array[node_to_id[node1]].leader == union_find.array[node_to_id[node2]].leader:
-		if not edge_dict: #determine maximum distance: by definition, maximum distance is the next edge we would have added
-			break
-		else:
-			union_find.union(node_to_id[node1], node_to_id[node2])
+	return edge_dict
 
 
-print union_find.cc_count
+
+def problem_2(edge_dict, union_find, node_to_id):
+	while True:
+
+		#find the lowest-cost edge
+		cheapest_cost = min(edge_dict.keys())
+		#print cheapest_cost
+
+		#choose an edge from the cheapest bin
+		node1, node2 = edge_dict[cheapest_cost].pop(0)
+		if len(edge_dict[cheapest_cost]) == 0: #if this bin is now empty, delete it
+			del edge_dict[cheapest_cost]
+		
+		#check to make sure nodes are not in same CC
+		if not union_find.array[node_to_id[node1]].leader == union_find.array[node_to_id[node2]].leader:
+			if not edge_dict: #determine maximum distance: by definition, maximum distance is the next edge we would have added
+				return union_find.cc_count
+			else:
+				union_find.union(node_to_id[node1], node_to_id[node2])
+
+FILENAME = "clustering_test_small.txt"
+node_list = problem2_reader(FILENAME)
+print node_list
+node_to_id, union_find = load_union_find(node_list)
+print node_to_id
+edge_dict = build_edge_dict(node_list)
+print edge_dict
+print problem_2(edge_dict, union_find, node_to_id)
 
 #################
 ### TEST CODE ###
