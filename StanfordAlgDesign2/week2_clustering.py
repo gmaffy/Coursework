@@ -132,6 +132,16 @@ def problem2_reader(filename):
 				node_list.append(''.join(line.split()))
 	return node_list
 
+def problem2_reader_abbrev(filename, termination):
+	node_list = []
+	with open(filename) as fo:
+		for idx, line in enumerate(fo):
+			if idx == termination:
+				break
+			if not idx == 0:
+				node_list.append(''.join(line.split()))
+	return node_list
+
 def load_union_find(node_list):
 	node_list = set(node_list)
 	node_to_id = {}
@@ -152,8 +162,9 @@ def build_edge_dict(node_list):
 	binary_strings_2 = kbits(bit_length,2)
 
 	formatting = '{0:'+str(bit_length)+'b}'
+	#print formatting
 
-	edge_dict = {1: [], 2: []}
+	edge_dict = {0: [], 1: [], 2: []}
 
 	node_set = set(node_list) #sets have amortized lookup O(1) vs. O(n) for lists
 
@@ -163,23 +174,33 @@ def build_edge_dict(node_list):
 		#check for hamming distance 1
 		for binary in binary_strings_1:
 			new_string = int(node,2) ^ int(binary,2)
-
 			new_string = formatting.format(new_string)
+			if len(new_string.split()[0]) < bit_length:
+				new_string = '0'*(bit_length - len(new_string.split()[0])) + new_string.split()[0]
 			if new_string in node_set:
 				edge_dict[1].append((node, new_string))
+
 
 			#check for hamming distance 2
 		for binary in binary_strings_2:
 			new_string = int(node,2) ^ int(binary,2)
 			new_string = formatting.format(new_string)
+			if len(new_string.split()[0]) < bit_length:
+				new_string = '0'*(bit_length - len(new_string.split()[0])) + new_string.split()[0]
 			if new_string in node_set:
 				edge_dict[2].append((node, new_string))
+
+	for idx1, node1 in enumerate(node_list):
+		for idx2, node2 in enumerate(node_list):
+			if node1 == node2 and not idx1 == idx2:
+				edge_dict[0].append((node1,node2))
 
 	return edge_dict
 
 
-
 def problem_2(edge_dict, union_find, node_to_id):
+	counter = 0
+	del edge_dict[0]
 	while True:
 
 		#find the lowest-cost edge
@@ -188,24 +209,46 @@ def problem_2(edge_dict, union_find, node_to_id):
 
 		#choose an edge from the cheapest bin
 		node1, node2 = edge_dict[cheapest_cost].pop(0)
+		#print cheapest_cost, node1, node2
 		if len(edge_dict[cheapest_cost]) == 0: #if this bin is now empty, delete it
 			del edge_dict[cheapest_cost]
 		
 		#check to make sure nodes are not in same CC
 		if not union_find.array[node_to_id[node1]].leader == union_find.array[node_to_id[node2]].leader:
-			if not edge_dict: #determine maximum distance: by definition, maximum distance is the next edge we would have added
-				return union_find.cc_count
-			else:
-				union_find.union(node_to_id[node1], node_to_id[node2])
+			#print "merged"
+			union_find.union(node_to_id[node1], node_to_id[node2])
+			counter += 1
 
-FILENAME = "clustering_test_small.txt"
+		if not edge_dict:
+			return counter
+
+FILENAME = "clustering_big.txt"
 node_list = problem2_reader(FILENAME)
-print node_list
+
+N_NODES = len(node_list)
+print "NUMBER OF NODES: ", N_NODES
+
+#print node_list
 node_to_id, union_find = load_union_find(node_list)
-print node_to_id
+#print node_to_id
 edge_dict = build_edge_dict(node_list)
-print edge_dict
-print problem_2(edge_dict, union_find, node_to_id)
+#print "edge_dict: ",edge_dict
+
+N_DUPLICATES = len(edge_dict[0]) / 2
+
+print "LENGTH 0 EDGES: ", N_DUPLICATES
+print "LENGTH 1 EDGES: ", len(edge_dict[1]) / 2
+print "LENGTH 2 EDGES: ", len(edge_dict[2]) / 2
+
+
+N_MERGES = problem_2(edge_dict, union_find, node_to_id)
+
+print "merges: ", N_MERGES
+print "final CCs: ", N_NODES - (N_MERGES + N_DUPLICATES)
+
+#print node_to_id
+#for idx, node in enumerate(union_find.array):
+#	print idx, union_find.array.index(node.leader)
 
 #################
 ### TEST CODE ###
