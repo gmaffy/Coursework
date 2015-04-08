@@ -164,7 +164,7 @@ def build_edge_dict(node_list):
 	formatting = '{0:'+str(bit_length)+'b}'
 	#print formatting
 
-	edge_dict = {0: [], 1: [], 2: []}
+	edge_dict = {1: [], 2: []}
 
 	node_set = set(node_list) #sets have amortized lookup O(1) vs. O(n) for lists
 
@@ -190,17 +190,12 @@ def build_edge_dict(node_list):
 			if new_string in node_set:
 				edge_dict[2].append((node, new_string))
 
-	for idx1, node1 in enumerate(node_list):
-		for idx2, node2 in enumerate(node_list):
-			if node1 == node2 and not idx1 == idx2:
-				edge_dict[0].append((node1,node2))
 
 	return edge_dict
 
 
 def problem_2(edge_dict, union_find, node_to_id):
 	counter = 0
-	del edge_dict[0]
 	while True:
 
 		#find the lowest-cost edge
@@ -223,18 +218,17 @@ def problem_2(edge_dict, union_find, node_to_id):
 			return counter
 
 FILENAME = "clustering_big.txt"
-node_list = problem2_reader(FILENAME)
+node_list = problem2_reader_abbrev(FILENAME,float("inf"))
 
 N_NODES = len(node_list)
 print "NUMBER OF NODES: ", N_NODES
+N_DUPLICATES = len(set(node_list))
 
 #print node_list
 node_to_id, union_find = load_union_find(node_list)
 #print node_to_id
 edge_dict = build_edge_dict(node_list)
 #print "edge_dict: ",edge_dict
-
-N_DUPLICATES = len(edge_dict[0]) / 2
 
 print "LENGTH 0 EDGES: ", N_DUPLICATES
 print "LENGTH 1 EDGES: ", len(edge_dict[1]) / 2
@@ -244,7 +238,9 @@ print "LENGTH 2 EDGES: ", len(edge_dict[2]) / 2
 N_MERGES = problem_2(edge_dict, union_find, node_to_id)
 
 print "merges: ", N_MERGES
-print "final CCs: ", N_NODES - (N_MERGES + N_DUPLICATES)
+print "final CCs: ", N_NODES - (N_MERGES + N_DUPLICATES) 
+#correct answer: 6118
+#200000 nodes, 28231 edges of length 1, 324937 edges of length 2, 192670 merges, 1212 edges of length 0
 
 #print node_to_id
 #for idx, node in enumerate(union_find.array):
