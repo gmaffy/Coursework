@@ -78,15 +78,29 @@ def weighted_independent_sets(path_graph_array):
 	Output will be the maximum possible sum of weights over non-adjacent nodes in the graph."""
 	S = 0
 	i = len(path_graph_array) - 1
-	while i>=0:
-		if path_graph_array[i-1]>=path_graph_array[i-2]+path_graph_array[i]:
+	while i>=2:
+		#scan through array from right to left. right-most element must either be in optimal set or not
+
+		if path_graph_array[i-1]>=path_graph_array[i-2]+path_graph_array[i]: #right-most element not in optimal set
 			i-=1
 		else:
+			S+=path_graph_array[i] #right-most element in optimal set
 			i-=2
+	
+	#base case 1: if only two items left, take the bigger one		
+	if i == 1:
+		if path_graph_array[i-1]>=path_graph_array[i]:
+			S+=path_graph_array[i-1]
+		else:
 			S+=path_graph_array[i]
+
+	#base case 2: if only one item left, take it
+	if i == 0:
+		S+= path_graph_array[i]
+
 	return S
 
-print weighted_independent_sets([4,4,5,4])
+print weighted_independent_sets([10,5,4,6])
 
 
 if __name__ == "__main__":
