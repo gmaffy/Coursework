@@ -79,7 +79,7 @@ class TravelingSalesmanBinary(TravelingSalesman):
 		#self.subset_to_integer = {'1'+item[::-1] : int(item,2) for item in all_binary_strings(self.n_nodes - 1)}
 		self.subset_array = []
 		formatting = '{0:'+str(self.n_nodes-1)+'b}'
-		print 2**(self.n_nodes-1)
+		#print 2**(self.n_nodes-1)
 		for int10 in range(2**(self.n_nodes - 1)):
 			bin = formatting.format(int10)
 			if len(bin.split()[0]) < self.n_nodes - 1:
@@ -106,16 +106,16 @@ class TravelingSalesmanBinary(TravelingSalesman):
 	def build_array(self):
 		#A will be a 2D array indexed by subsets of nodes that contain 0, and destinations
 		#j = {1,2,...,n}
-		#self.array = [[None for dummy1 in range(self.n_nodes)] for dummy2 in range(len(self.subset_array))]
-		self.array = [[None for dummy1 in range(self.n_nodes)] for dummy2 in range(2)]
-		for row_index in range(2):
+		self.array = [[None for dummy1 in range(self.n_nodes)] for dummy2 in range(len(self.subset_array))]
+		#self.array = [[None for dummy1 in range(self.n_nodes)] for dummy2 in range(2)]
+		for row_index in range(len(self.array)):
 			self.array[row_index][0] = float("inf")
 		self.array[self.subset_to_index(("1"+"0"*(self.n_nodes -1)))][0] = 0
-		print self.array
+		#print self.array
 
 	def solve(self):
 		for subproblem_size in range(2,self.n_nodes+1):
-			print subproblem_size, len(self.subsets_by_size[subproblem_size])
+			print "subsize", subproblem_size, len(self.subsets_by_size[subproblem_size])
 			for subset_id in self.subsets_by_size[subproblem_size]:
 				#print subset_id
 				destination = self.subset_array[subset_id]
@@ -127,7 +127,7 @@ class TravelingSalesmanBinary(TravelingSalesman):
 							subset_without_dest = destination[0:dest_idx]+"0"+destination[dest_idx+1::]
 							subsetid_without_dest = self.subset_to_index(subset_without_dest)
 							#print subset_without_dest
-							#print subset_id
+							print subset_id
 							#print dest_idx
 
 							recurrence_array = []
@@ -141,12 +141,12 @@ class TravelingSalesmanBinary(TravelingSalesman):
 
 
 							#recurrence_array = [self.array[subsetid_without_dest][idx] + self.cost(idx, dest_idx) for idx, k in enumerate(subset_without_dest) if int(k) and not idx == dest_idx]
-							#self.array[subset_id][dest_idx] = min(recurrence_array)
+							self.array[subset_id][dest_idx] = min(recurrence_array)
 							#self.array[1][dest_idx] = min(recurrence_array)
 
 				#dump the first row of the array, add a new one
-				self.array = [self.array[1],[None for i in range(self.n_nodes)]]
-				self.array[1][0] = float("inf")
+				#self.array = [self.array[1],[None for i in range(self.n_nodes)]]
+				#self.array[1][0] = float("inf")
 
 		#return self.array
 		final_subset_id = self.subsets_by_size[self.n_nodes][0]
