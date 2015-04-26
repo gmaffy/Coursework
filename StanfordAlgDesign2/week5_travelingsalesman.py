@@ -50,7 +50,7 @@ class TravelingSalesman(object):
 			self.subsets_by_size[len(subset)].append(self.subset_to_integer[subset])
 
 	def build_array(self):
-		#A will be a 2D array indexed by subsets of nodes that contain 0, and destinations
+		#A will be a 2D array indexed by subsets of nodes that contain 0, and subsets
 		#j = {1,2,...,n}
 		self.array = [[None for dummy1 in range(self.n_nodes)] for dummy2 in range(len(self.integer_to_subset.keys()))]
 		for row_index in range(len(self.integer_to_subset.keys())):
@@ -60,14 +60,14 @@ class TravelingSalesman(object):
 	def solve(self):
 		for subproblem_size in range(2,self.n_nodes+1):
 			for subset_id in self.subsets_by_size[subproblem_size]:
-				for destination in self.integer_to_subset[subset_id]:
-					if not destination == 0:
-						subset_without_dest = [i for i in self.integer_to_subset[subset_id] if not i == destination]
+				for subset in self.integer_to_subset[subset_id]:
+					if not subset == 0:
+						subset_without_dest = [i for i in self.integer_to_subset[subset_id] if not i == subset]
 						subset_without_dest = tuple(subset_without_dest)
 						subsetid_without_dest = self.subset_to_integer[subset_without_dest]
 
-						recurrence_array = [self.array[subsetid_without_dest][k] + self.cost(k, destination) for k in subset_without_dest]
-						self.array[subset_id][destination] = min(recurrence_array)
+						recurrence_array = [self.array[subsetid_without_dest][k] + self.cost(k, subset) for k in subset_without_dest]
+						self.array[subset_id][subset] = min(recurrence_array)
 
 		#return self.array
 		final_subset_id = self.subsets_by_size[self.n_nodes][0]
@@ -112,7 +112,7 @@ class TravelingSalesmanBinary(TravelingSalesman):
 		return integer
 
 	def build_array(self, filename):
-		#A will be a 2D array indexed by subsets of nodes that contain 0, and destinations
+		#A will be a 2D array indexed by subsets of nodes that contain 0, and subsets
 		#j = {1,2,...,n}
 		counter = 0
 		with open(filename, 'w') as fo:
@@ -128,34 +128,138 @@ class TravelingSalesmanBinary(TravelingSalesman):
 				fo.write('\n')
 				counter += 1
 
-		#self.array = [[None for dummy1 in range(self.n_nodes)] for dummy2 in range(2)]
-		#for row_index in range(len(self.array)):
-		#	self.array[row_index][0] = float("inf")
-		#self.array[self.subset_to_index(("1"+"0"*(self.n_nodes -1)))][0] = 0
-		#print self.array
+
+	def solve2(self, filename):
+
+		#iterate through subproblem sizes
+		for subproblem_size in range(2, self.n_nodes+1):
+
+			lines_to_extract = []
+			sub_dict = {}
+
+			for subset_id in self.subsets_by_size[subproblem_size]:
+				#now have an integer index representing the subset
+				subset = self.subset_array[subset_id]
+
+				if not subset == "1"+"0"*(self.n_nodes - 1):
+
+					lines_to_extract.append(subset_id)
+
+					#find position of j's and the subsets without j
+					j_indices = []
+					subsets_without_j = []
+
+					for idx, bit in enumerate(subset):
+
+						if idx!=0 and int(bit):
+							j_indices.append(idx) #keep track of j
+							subset_without_j = subset[0:idx]+"0"+subset[idx+1::] #remove j from the current subset
+							subsets_without_j.append(subset_without_j)
+							lines_to_extract.append(self.subset_to_index(subset_without_j)) #need A[S-{j}][k]
+
+					sub_dict[subset] = (j_indices, subsets_without_j)
+
+			#pull out the lines we need
+			line_dict = {}
+
+			ftemp = open("tempfile.txt", "w")
+			with open(filename, 'r') as fo:
+				for line in fo:
+					if int(line.split()[0]) in lines_to_extract:
+						line_dict[int(line.split()[0])] = line.split()[1::]
+					else:
+						ftemp.write(line)
+			ftemp.close()
+
+			#go back through the subsets
+			for subset_id in self.subsets_by_size[subproblem_size]:
+
+				subset = self.subset_array[subset_id]
+				print subset
+				if not subset == "1" + "0"*(self.n_nodes - 1):
+					
+					for j, bit in enumerate(subset):
+						
+						if j!=0 and int(bit):
+							print j
+							minimum = float("inf")
+							subset_without_j = subset[0:j]+"0"+subset[j+1::]
+							subset_without_j_id = self.subset_to_index(subset_without_j)
+
+							for k, bit in enumerate(subset_without_j):
+								if int(bit) and not k==j:
+									print k
+
+									current = float(line_dict[subset_without_j_id][k]) + self.cost(k,j)
+									print current
+									if current < minimum:
+										minimum = current
+
+							line_dict[self.subset_to_index(subset)][j] = str(minimum)
+
+			#put the lines back into the file - not all are actually needed, can work this out later
+			print line_dict
+			
+			ftemp = open("tempfile.txt", "a")
+			for index in line_dict.keys():
+				line = line_dict[index]
+				str_line = "\t".join(line)
+				str_line = str(index)+'\t'+str_line
+				ftemp.write(str_line)
+				ftemp.write("\n")
+			ftemp.close()
+			os.remove(filename)
+			for tfilename in os.listdir("."):
+				if tfilename.startswith("temp"):
+					os.rename(tfilename, filename)
+			#return
+
+		final_subset_id = self.subsets_by_size[self.n_nodes][0]
+		
+		minimum = float("inf")
+		with open(filename, 'r') as fo:
+			for idx, line in enumerate(fo):
+				if int(line.split()[0]) == final_subset_id:
+					
+					target_line = line.split()
+					target_line = target_line[1::]
+					
+					for j in range(2,self.n_nodes):
+						
+						if float(target_line[j]) + self.cost(j,0) < minimum:
+							minimum = float(target_line[j]) + self.cost(j,0)
+		
+		return minimum
+
+
+
+				
+
+
 
 	def solve(self, filename):
 		for subproblem_size in range(2,self.n_nodes+1):
 			print subproblem_size
 			dest_dict = {}
 			relevant_lines = []
-			#print "subsize", subproblem_size, len(self.subsets_by_size[subproblem_size])
+			
 			for subset_id in self.subsets_by_size[subproblem_size]:
 				relevant_lines.append(subset_id)
 				#print subset_id
-				destination = self.subset_array[subset_id]
+				subset = self.subset_array[subset_id]
 
-				if not destination == "1"+"0"*(self.n_nodes - 1):
+				if not subset == "1"+"0"*(self.n_nodes - 1):
 
-					subsets_without_dest = [destination[0:dest_idx]+"0"+destination[dest_idx+1::] for dest_idx, bit in enumerate(destination) if int(bit) and not dest_idx == 0]
-					dest_indices = [dest_idx for dest_idx, bit in enumerate(destination) if int(bit) and not dest_idx == 0]
-					subsetids_without_dest = [self.subset_to_index(subset_without_dest) for subset_without_dest in subsets_without_dest]
-					relevant_lines.extend(subsetids_without_dest)
+					subsets_without_j = [subset[0:j_idx]+"0"+subset[j_idx+1::] for j_idx, bit in enumerate(subset) if int(bit) and not j_idx == 0]
+					j_indices = [j_idx for j_idx, bit in enumerate(subset) if int(bit) and not j_idx == 0]
+					subsetids_without_j = [self.subset_to_index(subset_without_j) for subset_without_j in subsets_without_j]
+					subsets_without_j, j_indices, subsetids_without_j = [i for i in reversed(subsets_without_j)], [i for i in reversed(j_indices)], [i for i in reversed(subsetids_without_j)]
+					relevant_lines.extend(subsetids_without_j)
 
-				dest_dict[destination] = (subsets_without_dest, dest_indices, subsetids_without_dest)
+				dest_dict[subset] = (subsets_without_j, j_indices, subsetids_without_j)
 
 
-			#at this point, have all destinations pointing to their sublocations
+			#at this point, have all subsets pointing to their sublocations
 			#now, can pull out the relevant lines from the file
 
 			file_dict = {}
@@ -171,29 +275,30 @@ class TravelingSalesmanBinary(TravelingSalesman):
 			ftemp.close()
 
 			to_add_back = []
-			print dest_dict
-			for destination in dest_dict.keys():
-				current_row = file_dict[self.subset_to_index(destination)]
-				current_row_id = self.subset_to_index(destination)
-				subsets_without_dest, dest_indices, subsetids_without_dest = dest_dict[destination]
 
+			for original in reversed(sorted(dest_dict.keys())):
+				current_row_id = self.subset_to_index(original)
+				current_row = file_dict[current_row_id]
+				
+				subsets_without_j, j_indices, subsetids_without_j = dest_dict[original]
 
-				for ID, subset in enumerate(subsets_without_dest):
+				for ID, subset in enumerate(subsets_without_j):
 					recurrence = (float('inf'), None, None)
-					dest_idx = dest_indices[ID]
-					data = file_dict[subsetids_without_dest[ID]]
-					current_recurrence = float(data[ID])+self.cost(ID, dest_idx)
+					for k, kbit in enumerate(subset):
+						if kbit and not k==j_indices[ID]:
 
-					if current_recurrence < recurrence[0]:
-							recurrence = (current_recurrence, ID, dest_indices[ID])
+							j_idx = j_indices[ID]
+							data = file_dict[subsetids_without_j[ID]]
+							current_recurrence = float(data[k])+self.cost(k, j_idx)
 
-					print current_row, current_recurrence, destination, current_row_id
+							if current_recurrence < recurrence[0]:
+								recurrence = (current_recurrence, ID, j_indices[ID])
+
 					current_row[recurrence[2]] = str(recurrence[0])
-					current_row = [str(current_row_id)]+current_row
-					to_add_back.append('\t'.join(current_row))
-
-				#print to_add_back
-				#return
+					if len(current_row) < self.n_nodes + 1:
+						current_row = [str(current_row_id)]+current_row
+				to_add_back.append('\t'.join(current_row))
+				
 
 			with open('tempfile.txt','a') as fo:
 				for r in to_add_back:
@@ -206,70 +311,22 @@ class TravelingSalesmanBinary(TravelingSalesman):
 					os.rename(tfilename, filename)
 
 
-
-					# recurrence_array = []
-					# subset_dict = {s : None for s in subsetids_without_dest}
-					# ftemp = open('tempfile.txt', 'a')
-					# with open(filename, 'r') as fo:
-
-					# 		for idx, k in enumerate(subset_without_dest):
-					# 			if int(k) and not idx == dest_idx:
-					# 				with open(filename,'r') as fo:
-					# 					for idx2, line in enumerate(fo):
-					# 						if idx2 in subsetids_without_dest:
-					# 							data = line.split()
-					# 							#print data
-					# 							recurrence_array.append(float(data[idx])+self.cost(idx, dest_idx))
-					# 							break
-					# 				#print idx, dest_idx
-					# 				#print subsetid_without_dest
-					# 				#print destination, subset_without_dest
-					# 				#print self.array[subsetid_without_dest]
-					# 				#recurrence_array.append(self.array[subsetid_without_dest][idx] + self.cost(idx, dest_idx))
-
-
-					# 		#recurrence_array = [self.array[subsetid_without_dest][idx] + self.cost(idx, dest_idx) for idx, k in enumerate(subset_without_dest) if int(k) and not idx == dest_idx]
-							
-					# 		#copy new entry to original file
-					# 		ftemp = open('tempfile.txt', 'a')
-					# 		with open(filename,'r') as fo:
-					# 			for idx, line in enumerate(fo):
-					# 				if not idx == subset_id:
-					# 					ftemp.write(line)
-					# 					#ftemp.write('\n')
-					# 				else:
-					# 					old_line = line.split()
-					# 					old_line[dest_idx] = str(min(recurrence_array))
-					# 					new_line = '\t'.join(old_line)
-					# 					ftemp.write(new_line)
-					# 					ftemp.write('\n')
-
-					# 		ftemp.close()
-					# 		os.remove(filename)
-					# 		for tfilename in os.listdir("."):
-					# 			if tfilename.startswith("temp"):
-					# 				os.rename(tfilename, filename)
-
-							#self.array[subset_id][dest_idx] = min(recurrence_array)
-							#self.array[1][dest_idx] = min(recurrence_array)
-
-				#dump the first row of the array, add a new one
-				#self.array = [self.array[1],[None for i in range(self.n_nodes)]]
-				#self.array[1][0] = float("inf")
-
-		#return self.array
+		
 		final_subset_id = self.subsets_by_size[self.n_nodes][0]
-		#return self.array[final_subset_id]
-
+		
 		minimum = float("inf")
 		with open(filename, 'r') as fo:
 			for idx, line in enumerate(fo):
-				if idx == final_subset_id:
+				if int(line.split()[0]) == final_subset_id:
+					
 					target_line = line.split()
+					target_line = target_line[1::]
+					
 					for j in range(2,self.n_nodes):
+						
 						if float(target_line[j]) + self.cost(j,0) < minimum:
 							minimum = float(target_line[j]) + self.cost(j,0)
-		#return min([self.array[final_subset_id][j] + self.cost(j,0) for j in range(2,self.n_nodes)])
+		
 		return minimum
 
 
@@ -289,4 +346,4 @@ if __name__ == "__main__":
 	#ts = TravelingSalesmanBinary(testgraph_rect)
 	ts = TravelingSalesmanBinary(testgraph_rect, "memo.txt")
 	print "data structures built"
-	print ts.solve("memo.txt")
+	print ts.solve2("memo.txt")
