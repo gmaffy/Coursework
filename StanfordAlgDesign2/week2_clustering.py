@@ -1,4 +1,5 @@
 import itertools
+import time
 
 class Node(object):
 
@@ -217,8 +218,12 @@ def problem_2(edge_dict, union_find, node_to_id):
 		if not edge_dict:
 			return counter
 
+start = time.time()
 FILENAME = "clustering_big.txt"
 node_list = problem2_reader_abbrev(FILENAME,float("inf"))
+
+readtime = time.time() - start
+print "readtime", readtime
 
 N_NODES = len(node_list)
 print "NUMBER OF NODES: ", N_NODES
@@ -230,15 +235,23 @@ node_to_id, union_find = load_union_find(node_list)
 edge_dict = build_edge_dict(node_list)
 #print "edge_dict: ",edge_dict
 
+
+
 print "LENGTH 0 EDGES: ", N_DUPLICATES
 print "LENGTH 1 EDGES: ", len(edge_dict[1]) / 2
 print "LENGTH 2 EDGES: ", len(edge_dict[2]) / 2
+
+structuretime = time.time() - readtime
+print "structuretime", structuretime
 
 
 N_MERGES = problem_2(edge_dict, union_find, node_to_id)
 
 print "merges: ", N_MERGES
 print "final CCs: ", N_NODES - (N_MERGES + N_DUPLICATES) 
+
+mergetime = time.time() - structuretime
+print "mergetime", mergetime
 #correct answer: 6118
 #200000 nodes, 28231 edges of length 1, 324937 edges of length 2, 192670 merges, 1212 edges of length 0
 
