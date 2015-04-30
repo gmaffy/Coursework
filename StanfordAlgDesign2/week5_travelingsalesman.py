@@ -78,7 +78,6 @@ class TravelingSalesman(object):
 
 class TravelingSalesmanBinary(TravelingSalesman):
 
-
 	def __init__(self, graph_dict, filename):
 		self.graph_dict = graph_dict #hash of node : (x coord, y coord); nodes are indexed from zero
 		self.n_nodes = len(self.graph_dict.keys())
@@ -96,6 +95,7 @@ class TravelingSalesmanBinary(TravelingSalesman):
 			if len(bin.split()[0]) < self.n_nodes - 2:
 				bin = '0'*(self.n_nodes - 2 - len(bin.split()[0])) + bin.split()[0]
 			self.subset_array.append('11'+bin[::-1])
+
 		print "subarray", len(self.subset_array)
 
 		#print self.subset_array[0:100]
@@ -114,7 +114,6 @@ class TravelingSalesmanBinary(TravelingSalesman):
 			self.cost_dict[node1] = []
 			for node2 in range(self.n_nodes):
 				self.cost_dict[node1].append(self.cost(node1, node2))
-
 
 	def subset_to_index(self, subset):
 		binary = subset[2::]
@@ -159,8 +158,11 @@ class TravelingSalesmanBinary(TravelingSalesman):
 		"""Rather than caching results in a file, simply store the previous subproblem only."""
 		#print self.subsets_by_size
 		#create initial array
+		#print self.subset_array[4516448]
+		#print 4516448 in self.subsets_by_size[11]
 		self.add_to_array(0)
-		cycletime = 0
+		cycletime = time.time()
+
 		for subproblem_size in range(3, self.n_nodes+1):
 			print subproblem_size, len(self.subsets_by_size[subproblem_size]), time.time() - cycletime
 			#for i in self.subsets_by_size[subproblem_size]:
@@ -186,7 +188,11 @@ class TravelingSalesmanBinary(TravelingSalesman):
 							for k, bit in enumerate(subset_without_j):
 								if int(bit) and not k==j:
 									
-									current = float(self.array[subset_without_j_id][k]) + self.cost_dict[k][j]
+									try:
+										current = float(self.array[subset_without_j_id][k]) + self.cost_dict[k][j]
+									except:
+										current = self.cost_dict[k][j]
+										print "error caught: key", subproblem_size, subset_without_j_id, k
 									
 									if current < minimum:
 										minimum = current
@@ -333,10 +339,10 @@ class TravelingSalesmanBinary(TravelingSalesman):
 testgraph_rect = {i : [0,i] for i in range(5)}
 for j in range(9,4,-1):
 	testgraph_rect[j] = [1,j-5]
-print testgraph_rect
+#print testgraph_rect
 
 testgraph_linear = {i: [0,i] for i in range(4)}
-print testgraph_linear
+#print testgraph_linear
 
 graph = ts_reader("tsp.txt")
 #ts = TravelingSalesmanBinary(testgraph_rect)
