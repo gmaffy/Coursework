@@ -2,6 +2,7 @@ import math
 import itertools
 import os
 import time
+import getopt
 
 def all_binary_strings(length):
 	#print sorted(["".join(seq) for seq in itertools.product("01", repeat=length)])
@@ -200,7 +201,10 @@ class TravelingSalesmanBinary(TravelingSalesman):
 							self.array[self.subset_to_index(subset)][j] = minimum
 			#print self.array
 			for subset_id in self.subsets_by_size[subproblem_size - 1]:
-				del self.array[subset_id]
+				try:
+					del self.array[subset_id]
+				except KeyError:
+					pass
 
 
 			#put the lines back into the file - not all are actually needed, can work this out later
@@ -302,7 +306,10 @@ class TravelingSalesmanBinary(TravelingSalesman):
 
 			#put the lines back into the file - not all are actually needed, can work this out later
 			for to_del in subproblems_to_delete:
-				del line_dict[to_del]
+				try:
+					del line_dict[to_del]
+				except:
+					pass
 			
 			ftemp = open("tempfile.txt", "a")
 			for index in line_dict.keys():
