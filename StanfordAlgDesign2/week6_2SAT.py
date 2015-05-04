@@ -34,6 +34,7 @@ class two_sat_graph(object):
 				if idx == 0:
 					n_vars = int(line.split()[0])
 				else:
+
 					a, b = [int(i) for i in line.split()]
 					edges.append((-a, b))
 					edges.append((-b, a))
@@ -45,7 +46,10 @@ class two_sat_graph(object):
 	def adjacency_dict(self):
 		"""Construct adjacency dict representation of graph, given list of tuples of (tail node, head node)"""
 		self.adjacency_dict = {}
+		self.reverse_dict = {}
 		for head, tail in self.edges:
+			self.reverse_dict[head] = []
+			self.reverse_dict[tail] = []
 			try:
 				self.adjacency_dict[head].append(tail)
 			except KeyError:
@@ -55,6 +59,16 @@ class two_sat_graph(object):
 				self.adjacency_dict[tail]
 			except KeyError:
 				self.adjacency_dict[tail] = []
+
+		for key in self.adjacency_dict.keys():
+			for node in self.adjacency_dict[key]:
+				self.reverse_dict[node].append(key)
+
+		for key in self.reverse_dict.keys():
+			self.reverse_dict[key] = list(set(self.reverse_dict[key]))
+
+		print "dicts done"
+
 			
 
 	def get(self, node):
@@ -63,11 +77,7 @@ class two_sat_graph(object):
 	def reverse_get(self, node):
 		"""Return any nodes that have directed edges into the target node.
 		Useful for finding strongly connected components."""
-		reverse_nodes = []
-		for key in self.adjacency_dict.keys():
-			if node in self.adjacency_dict[key]:
-				reverse_nodes.append(key)
-		return reverse_nodes
+		return self.reverse_dict[node]
 
 
 	def dfs_loop_firstpass(self):
@@ -80,6 +90,7 @@ class two_sat_graph(object):
 				self.dfs_kosaraju_rev(node1)	
 		#print self.finishing_times
 		#print self.nodes
+		print "firstpass done"
 
 	def dfs_kosaraju_rev(self, node2):
 		#assert len(searched) == graph.count_nodes() #searched should always be passed in from the enclosing namespace
@@ -107,6 +118,8 @@ class two_sat_graph(object):
 			if not self.searched[node]:
 				self.leader = self.nodes[node_index]
 				self.dfs_kosaraju_fwd(node)
+
+		print "secondpass done"
 		return self.leaders
 
 	def dfs_kosaraju_fwd(self, node):
@@ -153,12 +166,16 @@ def multicheck(list_of_filenames):
 	print "boolstring", bool_string
 	return bool_string
 
-#list_of_filenames = ["2sat_satisfiable.txt", "2sat_unsatisfiable.txt"]
+
 list_of_filenames = ["2sat1.txt", "2sat2.txt", "2sat3.txt", "2sat4.txt", "2sat5.txt", "2sat6.txt"]
+#print multicheck(list_of_filenames)
+
+test_list = ["2sat_test1.txt", "2sat_test2.txt", "2sat_test3.txt", "2sat_test4.txt", "2sat_test_big.txt"]
 print multicheck(list_of_filenames)
 
 if __name__ == "__main__":
-	pass
+	test_list = ["2sat_test1.txt", "2sat_test2.txt", "2sat_test3.txt", "2sat_test4.txt", "2sat_test_big.txt"]
+	print multicheck(test_list)
 	#tsg = two_sat_graph("kosaraju_test.txt")
 	#tsg.kosaraju_twopass()
 	
