@@ -89,13 +89,13 @@ class TravelingSalesmanBinary(TravelingSalesman):
 	def build_subsets(self):
 		#self.subset_to_integer = {'1'+item[::-1] : int(item,2) for item in all_binary_strings(self.n_nodes - 1)}
 		self.subset_array = []
-		formatting = '{0:'+str(self.n_nodes-2)+'b}'
+		
 		#print 2**(self.n_nodes-1)
-		for int10 in range(2**(self.n_nodes - 2)):
-			bin = formatting.format(int10)
-			if len(bin.split()[0]) < self.n_nodes - 2:
-				bin = '0'*(self.n_nodes - 2 - len(bin.split()[0])) + bin.split()[0]
-			self.subset_array.append('11'+bin[::-1])
+		all_binary_strings = itertools.product(["1", "0"], repeat=self.n_nodes-2)
+		for string in all_binary_strings:
+			#print "11"+''.join(reversed(string))
+			self.subset_array.append('11'+''.join(reversed(string)))
+		
 
 		print "subarray", len(self.subset_array)
 
@@ -117,7 +117,7 @@ class TravelingSalesmanBinary(TravelingSalesman):
 				self.cost_dict[node1].append(self.cost(node1, node2))
 
 	def subset_to_index(self, subset):
-		binary = subset[2::]
+		binary = subset[1::]
 		binary = binary[::-1]
 		integer = int(binary, 2)
 		#print 'binint', binary, integer
@@ -147,7 +147,7 @@ class TravelingSalesmanBinary(TravelingSalesman):
 			self.array = {}
 
 		if item == 0:
-			line = [0, self.cost(0,1)]
+			line = [0, self.cost_dict[0][1]]
 		else:
 			line = [float('inf')]
 		while len(line) < self.n_nodes:
@@ -171,7 +171,7 @@ class TravelingSalesmanBinary(TravelingSalesman):
 
 			cycletime = time.time()
 			#go back through the subsets
-			for subset_id in self.subsets_by_size[subproblem_size]:
+			for subset_id in reversed(self.subsets_by_size[subproblem_size]):
 				self.add_to_array(subset_id)
 
 				subset = self.subset_array[subset_id]
@@ -203,8 +203,10 @@ class TravelingSalesmanBinary(TravelingSalesman):
 			for subset_id in self.subsets_by_size[subproblem_size - 1]:
 				try:
 					del self.array[subset_id]
-				except KeyError:
-					pass
+
+				except:
+					print subset_id, "failure"
+
 
 
 			#put the lines back into the file - not all are actually needed, can work this out later
@@ -351,7 +353,7 @@ for j in range(9,4,-1):
 testgraph_linear = {i: [0,i] for i in range(4)}
 #print testgraph_linear
 
-graph = ts_reader("tsp.txt")
+graph = ts_reader("testgraph_18.txt")
 #ts = TravelingSalesmanBinary(testgraph_rect)
 ts = TravelingSalesmanBinary(graph, "memo.txt")
 print "data structures built"
